@@ -1,70 +1,91 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import GradientText from "@/components/text_gradient";
+import ToggleSwitch from "@/components/toggle_switch";
+import { useGlobalStore } from "@/stores/global_store";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({ ios: 'cmd + d', android: 'cmd + m' })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+
+export default function Home() {
+    const state = useGlobalStore();
+    const router = useRouter();
+
+    const [schedule, setSchedule] = useState(state.get.linked_schedule);
+    const [linkHovered, setLinkHovered] = useState(false);
+
+    const SetLink = () => {
+        setLinkHovered(false)
+        router.replace("./search");
+    }
+    const getWeekday = () => {
+        const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const today = new Date();
+        const dayName = daysOfWeek[today.getDay()];
+        return dayName;
+    };
+
+
+    const getMonth = () => {
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const today = new Date();
+        const monthName = months[today.getMonth()];
+        return monthName;
+    };
+
+    const today_month = getMonth();
+    const today_day = ((new Date()).getDate()).toString();
+    const today_weekday = getWeekday();
+    
+    return (
+        <View className="bg-grey-950 h-full w-full ">
+            <View className="mx-[24] w-auto">
+
+                <View className=" h-[60] justify-center  flex items-end">
+                    <Text className="text-grey-400 font-manrope-semibold text-[24px]">Today</Text>
+                </View>
+                <View className="h-max justify-center flex items-end">
+                    <Text className="text-grey-750 text-[12] font-manrope-semibold">{today_month}, {today_day} {today_weekday}</Text>
+                </View>
+            </View>
+            {
+                (schedule) ?
+                    (
+                        <ScrollView>
+
+                            <Text>Not Empty</Text>
+
+                        </ScrollView>
+                    )
+                    :
+                    (
+                        <View className="w-full justify-center flex-1  items-center  flex">
+                            <View className="w-full items-center h-max ">
+
+                                <Image className="w-[220] bg-cover h-[144]" source={require("../../assets/images/schedule-empty.png")} />
+                                <View>
+
+                                    <Text className="mt-[45] text-[16] w-[170] text-center font-manrope-semibold text-grey-400">
+                                        Oops, looks like your schedule's feeling a {"\n"} little lonely!
+                                    </Text>
+                                </View>
+                                <Pressable onPressIn={() => setLinkHovered(true)} onPress={SetLink} onPressOut={SetLink} className={"h-[50] mt-[65] w-[200] pt-[5] rounded-full justify-center items-center " + ((linkHovered) ? "bg-grey-750/60 scale-95 " : "bg-grey-900 ")}>
+                                    <GradientText
+                                        text="Let's link up"
+                                        fontSize={20}
+                                    />
+
+                                </Pressable>
+                            </View>
+
+                        </View>
+
+                    )
+            }
+
+        </View>
+    )
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

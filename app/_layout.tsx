@@ -1,37 +1,52 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, Tabs } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import SetFonts from "@/hooks/useFonts";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+    const [appIsReady, setAppIsReady] = useState(false);
+   
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
+    console.log(appIsReady);
+    useEffect(() => {
+        async function prepare() {
+            try {
+                // Pre-load fonts, make any API calls you need to do here
+                await SetFonts();
+                // Artificially delay for two seconds to simulate a slow loading
+                // experience. Please remove this if you copy and paste the code!
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            } catch (e) {
+                console.warn(e);
+            } finally {
+                // Tell the application to render
+                setAppIsReady(true);
+            }
+        }
+
+        prepare();
+    }, []);
+
+    const onLayoutRootView = useCallback(async () => {
+        if (appIsReady) {
+            // This tells the splash screen to hide immediately! If we call this after
+            // `setAppIsReady`, then we may see a blank screen while the app is
+            // loading its initial state and rendering its first pixels. So instead,
+            // we hide the splash screen once we know the root view has already
+            // performed layout.
+            await SplashScreen.hideAsync();
+        }
+    }, [appIsReady]);
+
+    if (!appIsReady) {
+        return null;
     }
-  }, [loaded]);
 
-  if (!loaded) {
-    return null;
-  }
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
-  );
+    return (
+        <Stack >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
+    )
 }

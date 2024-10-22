@@ -1,37 +1,29 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import TabBar from "@/components/tab_bar";
+import { Tabs } from "expo-router";
+import { NativeModules, Platform, StatusBar, StyleSheet, Text } from "react-native";
 
-import { TabBarIcon } from '@/components/navigation/TabBarIcon';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+
+
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+    const { StatusBarManager } = NativeModules;
 
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
-  );
+    const header_theme = (true) ? "black" : "white";
+
+    const status_bar_height = Platform.OS === 'android' ? StatusBar.currentHeight : Platform.OS === "ios" ? StatusBarManager.getHeight(({ height }: any) => height) : 0;
+
+    const header = {
+        headerStyle: {
+            height: status_bar_height,
+            backgroundColor: header_theme
+        }
+    }
+    return (
+        <Tabs tabBar={props => <TabBar {...props} />} >
+            <Tabs.Screen name="index" options={header} />
+            <Tabs.Screen name="search" options={header} />
+            <Tabs.Screen name="schedule" options={header} />
+            <Tabs.Screen name="widget" options={header} />
+        </Tabs>
+    )
 }
