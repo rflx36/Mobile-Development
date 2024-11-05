@@ -1,10 +1,13 @@
 import { Stack, Tabs } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from 'expo-splash-screen';
-import SetFonts from "@/hooks/useFonts";
+import useFonts from "@/hooks/useFonts";
+import { FetchScheduleMain } from "@/firebase/firebase_fetch_main";
+import { useGlobalStore } from "@/hooks/useGlobalStore";
 
 
 export default function RootLayout() {
+    const state = useGlobalStore();
     const [appIsReady, setAppIsReady] = useState(false);
    
 
@@ -13,10 +16,15 @@ export default function RootLayout() {
         async function prepare() {
             try {
                 // Pre-load fonts, make any API calls you need to do here
-                await SetFonts();
+                await useFonts();
                 // Artificially delay for two seconds to simulate a slow loading
                 // experience. Please remove this if you copy and paste the code!
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                // await new Promise(resolve => setTimeout(resolve, 2000));
+
+                const schedule_main = await FetchScheduleMain();
+                state.get.main_schedule = schedule_main;
+                state.set();
+                // console.log(temp);
             } catch (e) {
                 console.warn(e);
             } finally {
@@ -46,7 +54,7 @@ export default function RootLayout() {
 
     return (
         <Stack >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
         </Stack>
     )
 }

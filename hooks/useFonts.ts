@@ -1,6 +1,6 @@
 import * as Font from "expo-font";
 
-export default async function SetFonts() {
+export default async function useFonts() {
 
     return await Font.loadAsync({
         'manrope-bold': require('../assets/fonts/Manrope-Bold.ttf'),

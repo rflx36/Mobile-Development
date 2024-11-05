@@ -16,7 +16,9 @@ export default function TabLayout() {
         headerStyle: {
             height: status_bar_height,
             backgroundColor: header_theme
-        }
+        },
+        
+        
     }
     return (
         <Tabs tabBar={props => <TabBar {...props} />} >

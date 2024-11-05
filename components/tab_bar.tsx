@@ -9,7 +9,7 @@ export default function TabBar({ state, descriptors, navigation }: BottomTabBarP
     return (
         <>
             <View className='bg-grey-900 absolute z-50 bottom-[55] h-[1] w-full' />
-            <View className='absolute justify-evenly z-50 items-center w-full h-[55] bg-grey-950  flex flex-row bottom-[0]'>
+            <View className='absolute justify-evenly z-50 items-center w-full h-[55]  bg-grey-950  flex flex-row bottom-[0]'>
                 {state.routes.map((route, index) => {
                     const { options } = descriptors[route.key];
                     const label =

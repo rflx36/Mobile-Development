@@ -1,5 +1,5 @@
 import GradientText from "@/components/text_gradient";
-import { useGlobalStore } from "@/stores/global_store";
+import { useGlobalStore } from "@/hooks/useGlobalStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
@@ -11,16 +11,15 @@ export default function Schedule() {
 
     const [schedule, setSchedule] = useState(state.get.linked_schedule);
     const [linkHovered, setLinkHovered] = useState(false);
-
     const SetLink = () => {
         setLinkHovered(false)
         router.replace("./search");
     }
     return (
-        <View className="bg-grey-950 h-full w-full ">
+        <View className="bg-black/95 h-full w-full ">
             <View className="mx-[24] w-auto h-full">
 
-                <View className="bg-grey-950 h-[60] justify-center  flex items-end">
+                <View className="h-[60] justify-center  flex items-end">
                     <Text className="text-grey-400 font-manrope-semibold text-[24px]">Schedule</Text>
                 </View>
 

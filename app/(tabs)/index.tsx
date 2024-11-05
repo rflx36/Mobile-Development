@@ -1,6 +1,6 @@
 import GradientText from "@/components/text_gradient";
 import ToggleSwitch from "@/components/toggle_switch";
-import { useGlobalStore } from "@/stores/global_store";
+import { useGlobalStore } from "@/hooks/useGlobalStore";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, Pressable, ScrollView, Text, View } from "react-native";
@@ -41,7 +41,7 @@ export default function Home() {
     const today_weekday = getWeekday();
     
     return (
-        <View className="bg-grey-950 h-full w-full ">
+        <View className="bg-black/95 h-full w-full ">
             <View className="mx-[24] w-auto">
 
                 <View className=" h-[60] justify-center  flex items-end">
@@ -72,7 +72,7 @@ export default function Home() {
                                         Oops, looks like your schedule's feeling a {"\n"} little lonely!
                                     </Text>
                                 </View>
-                                <Pressable onPressIn={() => setLinkHovered(true)} onPress={SetLink} onPressOut={SetLink} className={"h-[50] mt-[65] w-[200] pt-[5] rounded-full justify-center items-center " + ((linkHovered) ? "bg-grey-750/60 scale-95 " : "bg-grey-900 ")}>
+                                <Pressable onPressIn={() => setLinkHovered(true)} onPress={SetLink} onPressOut={SetLink} className={"h-[50] mt-[65] w-[200] pt-[5] rounded-full justify-center items-center " + ((linkHovered) ? "bg-grey-750/60 scale-95 " : "bg-grey-950 ")}>
                                     <GradientText
                                         text="Let's link up"
                                         fontSize={20}
