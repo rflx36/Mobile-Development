@@ -36,11 +36,6 @@ export default function TabBarButton(props: ITabBarButton) {
                     <Image source={require("../assets/icons/icon-timetable-active.png")} className="w-[24] h-[24] " /> :
                     <Image source={require("../assets/icons/icon-timetable.png")} className="w-[24] h-[24] " />
                 : <></>}
-            {(props.routeName == "widget") ?
-                (props.isFocused) ?
-                    <Image source={require("../assets/icons/icon-widget-active.png")} className="w-[24] h-[24] " /> :
-                    <Image source={require("../assets/icons/icon-widget.png")} className="w-[24] h-[24] " />
-                : <></>}
             {(props.isFocused) ?
                 <Image source={require("../assets/icons/icon-tab-active.png")} className="w-[6] h-[6] mt-[5]"/>
                 :

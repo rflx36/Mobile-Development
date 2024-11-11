@@ -1,28 +1,28 @@
-import { MainScheduleType, ViewScheduleType } from "./types"
+import { LinkedScheduleType, MainScheduleType, ViewRoomType, ViewScheduleType } from "./types"
 
 interface IGlobalState {
 
-    widget_use_24_hour: boolean,
-    widget_show_weekday: boolean,
-    widget_use_collapse: boolean,
     main_schedule: MainScheduleType,
-    linked_schedule: any | null,
-    view_schedule: ViewScheduleType | null;
+    linked_schedule: LinkedScheduleType | null,
+    view_schedule: ViewScheduleType | null,
+    view_room : ViewRoomType | null
 }
 
 export const DEFAULT_GLOBAL_STATE: IGlobalState = {
-    widget_use_24_hour: false,
-    widget_show_weekday: false,
-    widget_use_collapse: false,
+
     main_schedule: null,
     linked_schedule: null,
     view_schedule: {
         selected: "",
-        data: { filter: "" },
+        data: { filter: "", filter_type: 0 },
         highlighted_id: "",
+        highlighted_info: null,
         filter_type: "room",
         view_availability: false,
-    }
+        time_start: "00:00",
+        time_end: "00:00",
+    },
+    view_room: null,
 }
 
 export interface IGlobalStoreMutator {

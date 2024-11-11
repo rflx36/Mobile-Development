@@ -1,34 +1,47 @@
-import { Stack, Tabs } from "expo-router";
+import { Stack } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import * as SplashScreen from 'expo-splash-screen';
 import useFonts from "@/hooks/useFonts";
 import { FetchScheduleMain } from "@/firebase/firebase_fetch_main";
 import { useGlobalStore } from "@/hooks/useGlobalStore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
+export function generateRandomId(length = 64) {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return result;
+}
 
 export default function RootLayout() {
     const state = useGlobalStore();
     const [appIsReady, setAppIsReady] = useState(false);
-   
+
 
     console.log(appIsReady);
     useEffect(() => {
         async function prepare() {
             try {
-                // Pre-load fonts, make any API calls you need to do here
                 await useFonts();
-                // Artificially delay for two seconds to simulate a slow loading
-                // experience. Please remove this if you copy and paste the code!
-                // await new Promise(resolve => setTimeout(resolve, 2000));
+
+
 
                 const schedule_main = await FetchScheduleMain();
+                const schedule_linked = await AsyncStorage.getItem("current-linked-schedule");
+
+                const app_id = await AsyncStorage.getItem("unique_app_id");
+                if (app_id == null) {
+                    await AsyncStorage.setItem("unique_app_id", generateRandomId());
+                }
+                state.get.linked_schedule = (schedule_linked != null) ? JSON.parse(schedule_linked) : null;
                 state.get.main_schedule = schedule_main;
+
                 state.set();
-                // console.log(temp);
             } catch (e) {
                 console.warn(e);
             } finally {
-                // Tell the application to render
                 setAppIsReady(true);
             }
         }
@@ -50,11 +63,16 @@ export default function RootLayout() {
     if (!appIsReady) {
         return null;
     }
-
-
     return (
-        <Stack >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false}} />
+        <Stack
+            screenOptions={{
+                animation: 'fade_from_bottom',
+            }}
+        >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="schedule_search" options={{ headerShown: false, }} />
+            <Stack.Screen name="room_request" options={{ headerShown: false, }} />
+
         </Stack>
     )
 }

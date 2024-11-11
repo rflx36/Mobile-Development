@@ -17,15 +17,14 @@ export default function TabLayout() {
             height: status_bar_height,
             backgroundColor: header_theme
         },
-        
-        
+        unmountOnBlur: true
+
     }
     return (
         <Tabs tabBar={props => <TabBar {...props} />} >
             <Tabs.Screen name="index" options={header} />
             <Tabs.Screen name="search" options={header} />
             <Tabs.Screen name="schedule" options={header} />
-            <Tabs.Screen name="widget" options={header} />
         </Tabs>
     )
 }

@@ -172,14 +172,59 @@ export interface DataFiltered {
     thursday_schedule?: Array<InstructorSessionSchedule | RoomSessionSchedule | YearSessionSchedule>,
     friday_schedule?: Array<InstructorSessionSchedule | RoomSessionSchedule | YearSessionSchedule>,
     saturday_schedule?: Array<InstructorSessionSchedule | RoomSessionSchedule | YearSessionSchedule>,
-    availibility?: AvailabilityFiltered
+    availibility?: AvailabilityFiltered,
+    filter_type: number
 }
 
 export interface ViewScheduleType {
     selected: string,
     data: DataFiltered,
     highlighted_id: string,
+    highlighted_info: {
+        section: string,
+        subject: string,
+        instructor: string,
+        time: string,
+        room: string
+    } | null,
     filter_type: ScheduleFilterType,
     view_availability: boolean,
+    time_start: TimeType,
+    time_end: TimeType
 }
 
+
+export interface LinkedScheduleType {
+    selected: string,
+    data: DataFiltered
+}
+
+
+export interface AllocatedListType {
+    time: string,
+    section: string,
+    subject: string,
+    instructor: string
+}
+
+
+export interface ViewRoomType {
+    room_name: string,
+    is_available: boolean,
+    allocated_list: Array<AllocatedListType>,
+    time_display: string
+}
+
+
+export interface FloorType {
+    is_available: boolean,
+    name: string,
+    text: string,
+    allocation: Array<AllocatedListType>,
+    time_display: string
+
+}
+
+
+export type SimDay = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | null;
+export type SimTime = TimeType | null;

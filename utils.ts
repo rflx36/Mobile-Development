@@ -14,6 +14,23 @@ export function ConvertHourToValue(hours: number) {
     return hours * 60;
 }
 
+export function RevertTime(time: string) {
+    if (time == ""){
+        return "00:00" as TimeType;
+    }
+    const [timePart, period] = time.split(" ");
+    let [hours, minutes] = timePart.split(":").map(Number);
+
+    if (period === "PM" && hours !== 12) {
+        hours += 12;
+    } else if (period === "AM" && hours === 12) {
+        hours = 0;
+    }
+
+    return `${String(hours).padStart(2, '0')}:${minutes}` as TimeType;
+}
+
+
 
 export function SearchResultType(data: Array<IScheduleBufferType>, room_name: Array<string>) {
     const filtered_data: Array<DataFiltered> = [];
@@ -46,6 +63,7 @@ export function SearchResultType(data: Array<IScheduleBufferType>, room_name: Ar
                 ...((filtered_friday.length > 0) && { friday_schedule: filtered_friday_session }),
                 ...((filtered_saturday.length > 0) && { saturday_schedule: filtered_saturday_session }),
 
+                filter_type: 1
             }
             filtered_data.push(object_filtered_room);
         }
@@ -86,7 +104,9 @@ export function SearchResultType(data: Array<IScheduleBufferType>, room_name: Ar
                     ...((ins.thursday) && { thursday_schedule: ins.thursday }),
                     ...((ins.friday) && { friday_schedule: ins.friday }),
                     ...((ins.saturday) && { saturday_schedule: ins.saturday }),
-                }
+
+                },
+                filter_type: 2
 
             }
             filtered_data.push(object_filtered_instructor);
@@ -218,6 +238,7 @@ export default function FilterResult(filter_type: number, data: Array<IScheduleB
                 ...((filtered_thursday.length > 0) && { thursday_schedule: filtered_thursday_session }),
                 ...((filtered_friday.length > 0) && { friday_schedule: filtered_friday_session }),
                 ...((filtered_saturday.length > 0) && { saturday_schedule: filtered_saturday_session }),
+                filter_type: 1
 
             }
             filtered_data.push(object_filtered_room);
@@ -258,7 +279,9 @@ export default function FilterResult(filter_type: number, data: Array<IScheduleB
                     ...((ins.thursday) && { thursday_schedule: ins.thursday }),
                     ...((ins.friday) && { friday_schedule: ins.friday }),
                     ...((ins.saturday) && { saturday_schedule: ins.saturday }),
-                }
+                },
+                filter_type: 2
+
 
             }
             filtered_data.push(object_filtered_instructor);
@@ -310,6 +333,8 @@ export default function FilterResult(filter_type: number, data: Array<IScheduleB
                     ...((filtered_thursday.length > 0) && { thursday_schedule: filtered_thursday_session }),
                     ...((filtered_friday.length > 0) && { friday_schedule: filtered_friday_session }),
                     ...((filtered_saturday.length > 0) && { saturday_schedule: filtered_saturday_session }),
+                    filter_type: 3
+
                 }
 
                 filtered_data.push(object_filtered_year);
