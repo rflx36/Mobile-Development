@@ -15,11 +15,11 @@ export function ConvertHourToValue(hours: number) {
 }
 
 export function RevertTime(time: string) {
-    if (time == ""){
-        return "00:00" as TimeType;
-    }
-    const [timePart, period] = time.split(" ");
-    let [hours, minutes] = timePart.split(":").map(Number);
+    // Remove "AM" or "PM" and split time into hours and minutes
+    const [hour, minute] = time.slice(0, -3).split(":");
+
+    const period = time.slice(-2); // Get "AM" or "PM"
+    let hours = parseInt(hour, 10);
 
     if (period === "PM" && hours !== 12) {
         hours += 12;
@@ -27,7 +27,10 @@ export function RevertTime(time: string) {
         hours = 0;
     }
 
-    return `${String(hours).padStart(2, '0')}:${minutes}` as TimeType;
+    // Ensure minutes always have two digits
+    const formattedMinutes = minute.padStart(2, "0");
+
+    return `${hours}:${formattedMinutes}` as TimeType;
 }
 
 

@@ -180,8 +180,6 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
     }
 
 
-    const info_1 = "TEST DATA";
-    const info_2 = "TEST DATA";
 
 
 
@@ -198,7 +196,7 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
         scroll_view_ref.current?.scrollTo({ y: ((past - 1) * 71), x: 0 });
     }, [])
 
-
+    const get_filter = state.get.linked_schedule?.selected;
     return (
         <View>
             <ScrollView ref={scroll_view_ref} style={{ height: schedule_height }} className="  border-y border-y-grey-900">
@@ -258,6 +256,16 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
                             if ((i + 1) == time_list_data_sorted.length) {
                                 scroll_view_ref.current?.scrollTo({ y: ((past - 1) * 71), x: 0 });
                             }
+
+                            // const room_ = (x as RoomSessionSchedule);
+                            // const ins_ = (x as InstructorSessionSchedule);
+                            // const year_ = (x as YearSessionSchedule);
+                            
+                            // console.log(get_filter);
+                            // const info_1 = (room_.instructor) ? room_.instructor.first_name : (ins_.section) ? ins_.section : year_.room;
+                            // const info_2 = (x as YearSessionSchedule).room;
+                            const info_1 = "TEST DATA";
+                            const info_2 = "TEST DATA";
                             return (
                                 <ScheduledTimeList
                                     session_start={ConvertTime(x.time_start)}

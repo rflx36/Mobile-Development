@@ -2,9 +2,10 @@ import GradientText from "@/components/text_gradient";
 import { realtime_database } from "@/firebase/firebase_config";
 import { useGlobalStore } from "@/hooks/useGlobalStore";
 import { simulate_day, simulate_time } from "@/modify";
-import { AllocatedListType, FloorType, InstructorSessionSchedule, RoomSessionSchedule, TimeType, ViewRoomType, YearSessionSchedule } from "@/types/types";
-import FilterResult, { ConvertTimeToValue, ConvertValueToTime } from "@/utils";
+import { AcceptDBTypes, AllocatedListType, FloorType, InstructorSessionSchedule, RoomSessionSchedule, TimeType, ViewRoomType, YearSessionSchedule, YearType } from "@/types/types";
+import FilterResult, { ConvertTimeToValue, ConvertValueToTime, RevertTime } from "@/utils";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { onValue, ref } from "firebase/database";
 import React from "react";
@@ -15,7 +16,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function Schedule() {
     const [realtimes, setRealtimes] = useState(null);
-
+    const [accepted, setAccepted] = useState<Array<AcceptDBTypes>>([]);
+    const router = useRouter();
 
     useEffect(() => {
 
@@ -23,13 +25,29 @@ export default function Schedule() {
         const ref_ = ref(realtime_database, "schedule/rooms");
         onValue(ref_, (snapshot) => {
             const snap = snapshot.val();
-            if (realtimes != snap) {
+            if (realtimes != snap && snap) {
                 setRealtimes(snapshot.val());
             }
         })
 
 
+        const GetAccepted = async () => {
+            const uid = await AsyncStorage.getItem("unique_app_id") || "";
+            const ref_ = ref(realtime_database, "schedule/accepted");
+            onValue(ref_, (snapshot) => {
+                if (snapshot.val()) {
+                    let dat = Object.values(snapshot.val()) as Array<AcceptDBTypes>;
+                    dat = dat.filter(x => x.uid == uid);
+                    if (accepted != dat) {
+                        setAccepted(dat);
+                    }
+                }
+            })
 
+            //
+
+        }
+        GetAccepted();
     }, [])
 
 
@@ -39,11 +57,22 @@ export default function Schedule() {
     const [floor, setFloor] = useState(1);
     const building_height = Dimensions.get("screen").height - 244;
 
+
+    const RoomList = () => {
+        router.push("/room_request_list");
+    }
+
     return (
 
         <GestureHandlerRootView className="bg-black/95 h-full w-full ">
             <View className="mx-[24] w-auto h-auto">
-                <View className="h-[60] justify-center  flex items-end">
+                <View className="h-[60] flex flex-row items-center justify-between">
+                    <Pressable onPress={RoomList}>
+                        <View className="h-[40] w-[40] bg-grey-950 justify-center items-center rounded-full translate-y-1 -translate-x-1">
+
+                            <Image source={require("../../assets/icons/icon-request-list.png")} className="w-[22] h-[22] opacity-50" />
+                        </View>
+                    </Pressable>
                     <Text className="text-grey-400 font-manrope-semibold text-[24px]">Rooms</Text>
                 </View>
             </View>
@@ -67,7 +96,7 @@ export default function Schedule() {
 
                     <ScrollView style={{ height: building_height }} className="relative" showsVerticalScrollIndicator={false}>
                         <View className="absolute h-full w-full z-10">
-                            <SetInteractiveFloorsContainer floor={floor} realtimes={realtimes} />
+                            <SetInteractiveFloorsContainer floor={floor} realtimes={realtimes} accepted={accepted} />
                         </View>
                         <View className="h-[10]" />
                         <View className="w-full h-full flex justify-center items-center ">
@@ -187,8 +216,8 @@ function SheetContainer() {
                                                     (
                                                         <>
                                                             <Text className="text-grey-500">section: {current?.section}</Text>
-                                                            <Text className="text-grey-500">subject: {current?.subject}</Text>
-                                                            <Text className="text-grey-500">instructor: {current?.instructor}</Text>
+                                                            <Text className="text-grey-500">{(current?.instructor.slice(0, 9) != "requested") ? "instructor: " + current?.instructor : "Name: " + current.instructor.slice(9)+" (Requested)"}</Text>
+                                                            <Text className="text-grey-500">{(current?.subject != "requested") ? "subject:" + current?.subject : ""}</Text>
 
                                                         </>
                                                     )
@@ -222,7 +251,7 @@ function SheetContainer() {
 }
 
 
-function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any }) {
+function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, accepted: Array<AcceptDBTypes> }) {
     const state = useGlobalStore();
 
 
@@ -249,7 +278,7 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any })
         const hours = new Date().getHours();
         const minutes = new Date().getMinutes();
         const day = getWeekday();
-        const current_time_value = (simulate_time == null)? ((hours * 60) + minutes): ConvertTimeToValue(simulate_time);
+        const current_time_value = (simulate_time == null) ? ((hours * 60) + minutes) : ConvertTimeToValue(simulate_time);
 
         let data = FilterResult(1, state.get.main_schedule!.data, state.get.main_schedule!.rooms.map(x => x.room_name));
 
@@ -270,13 +299,43 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any })
             return { available: available, text: text };
         }
 
-        const GetDayInfo = (room_data: Array<RoomSessionSchedule>) => {
-            const times = room_data.map(x => ({ start: x.time_start, end: x.time_end }));
+        const GetDayInfo = (room_data: Array<RoomSessionSchedule>, room_name: string) => {
+            let room_dat = room_data;
+            const accepteds = props.accepted.find(x => room_name == x.room);
+
+
+            if (accepteds) {
+                // const dat = { start: RevertTime(accepteds.time_start), end: RevertTime(accepteds.time_end) }
+                room_dat.push({
+                    time_start: RevertTime(accepteds.time_start),
+                    time_end: RevertTime(accepteds.time_end),
+                    duration: 0,
+                    section: accepteds.section,
+                    year: 1 as YearType,
+                    course: {
+                        code: "",
+                        title: "",
+                    },
+                    instructor: {
+                        first_name: "requested" + accepteds.name,
+                        last_name: ""
+                    },
+                    subject: {
+                        code: "requested",
+                        title: ""
+                    }
+                })
+
+            }
+
+            const times = room_dat.map(x => ({ start: x.time_start, end: x.time_end }));
+
+
             const current_availability = GetDayAvailability(times);
             let time_display = "Room is available until end of the day";
             //implement current time if occupied or next subject if unoocipied
             let added = false;
-            const allocation = room_data.map(x => {
+            const allocation = room_dat.map(x => {
                 const time = ConvertTime(x.time_start) + " - " + ConvertTime(x.time_end);
                 const instructor = x.instructor.first_name + " " + x.instructor.last_name
 
@@ -290,6 +349,8 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any })
                 }
                 return { time: time, section: x.section, subject: x.subject.code, instructor: instructor }
             })
+
+
             return {
                 available: current_availability.available,
                 text: current_availability.text,
@@ -304,42 +365,42 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any })
             let allocation: Array<AllocatedListType> = [];
             let time_display = "";
             if (day == "Monday" && x.monday_schedule) {
-                const day_info = GetDayInfo(x.monday_schedule as Array<RoomSessionSchedule>);
+                const day_info = GetDayInfo(x.monday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
                 text = day_info.text;
                 allocation = day_info.allocation;
                 time_display = day_info.time_display;
             }
             else if (day == "Tuesday" && x.tuesday_schedule) {
-                const day_info = GetDayInfo(x.tuesday_schedule as Array<RoomSessionSchedule>);
+                const day_info = GetDayInfo(x.tuesday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
                 text = day_info.text;
                 allocation = day_info.allocation;
                 time_display = day_info.time_display;
             }
             else if (day == "Wednesday" && x.wednesday_schedule) {
-                const day_info = GetDayInfo(x.wednesday_schedule as Array<RoomSessionSchedule>);
+                const day_info = GetDayInfo(x.wednesday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
                 text = day_info.text;
                 allocation = day_info.allocation;
                 time_display = day_info.time_display;
             }
             else if (day == "Thursday" && x.thursday_schedule) {
-                const day_info = GetDayInfo(x.thursday_schedule as Array<RoomSessionSchedule>);
+                const day_info = GetDayInfo(x.thursday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
                 text = day_info.text;
                 allocation = day_info.allocation;
                 time_display = day_info.time_display;
             }
             else if (day == "Friday" && x.friday_schedule) {
-                const day_info = GetDayInfo(x.friday_schedule as Array<RoomSessionSchedule>);
+                const day_info = GetDayInfo(x.friday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
                 text = day_info.text;
                 allocation = day_info.allocation;
                 time_display = day_info.time_display;
             }
             else if (day == "Saturday" && x.saturday_schedule) {
-                const day_info = GetDayInfo(x.saturday_schedule as Array<RoomSessionSchedule>);
+                const day_info = GetDayInfo(x.saturday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
                 text = day_info.text;
                 allocation = day_info.allocation;
@@ -359,17 +420,20 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any })
                     if (match_name.realtime_id && props.realtimes.hasOwnProperty(match_name.realtime_id)) {
                         const value = props.realtimes[match_name.realtime_id];
                         available = !value.occupied;
+
                     }
 
                 }
             }
 
-
+            console.log(allocation);
             return { is_available: available, name: x.filter, text: text, allocation: allocation, time_display: time_display }
         })
 
         return result;
     }
+
+
 
     const test_arr: Array<FloorType> = GetFloorsData();
 

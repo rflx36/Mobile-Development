@@ -88,7 +88,8 @@ export default function Request() {
             const year = String(today.getFullYear()).slice(-2);
             return `${month}-${day}-${year}`;
         };
-
+        const hours = new Date().getHours();
+        const minutes = new Date().getMinutes();
         const request_info = {
             uid: app_id,
             room_name: room_name,
@@ -97,9 +98,9 @@ export default function Request() {
             section: section,
             name: name,
             message: message,
-            day_validity: getTodayDate()
+            day_validity: getTodayDate(),
+            time_requested: ConvertValueToTime(((hours * 60) + minutes))
         }
-
         try {
             await push(ref(realtime_database, "schedule/request"), {
                 ...request_info
@@ -109,8 +110,11 @@ export default function Request() {
             console.log(e);
         }
         finally {
+            state.get.view_room = null;
+            state.set();
             router.back();
             ToastAndroid.show('Request sent successfully!', ToastAndroid.SHORT);
+            
         }
     }
 
@@ -151,13 +155,15 @@ export default function Request() {
             const hours = new Date().getHours();
             const minutes = new Date().getMinutes();
             const current_time_value = (simulate_time == null) ? ((hours * 60) + minutes) : ConvertTimeToValue(simulate_time);
-
-            const time_start_value = current_time_value;
+            const current_multiplier = Math.ceil(current_time_value / 30);
+            const main_time_start = ConvertTimeToValue(state.get.main_schedule?.time_start || "00:00");
+            const time_start_value = (main_time_start > current_time_value )?main_time_start: ( 30 * current_multiplier);
+        
             const time_end_value = ConvertTimeToValue(state.get.main_schedule?.time_end || "00:00");
             const time_list = [];
-            const total_minutes = time_end_value - time_start_value; // Total duration in minutes
-            const increments = 30; // 30-minute increments
-
+            const total_minutes = time_end_value - time_start_value;
+            const increments = 30;
+            
             for (let i = 0; i <= total_minutes; i += increments) {
 
                 const hours = Math.floor((time_start_value + i) / 60);

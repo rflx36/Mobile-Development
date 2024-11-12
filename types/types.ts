@@ -228,3 +228,51 @@ export interface FloorType {
 
 export type SimDay = "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | null;
 export type SimTime = TimeType | null;
+
+
+
+
+export interface RequestDBTypes {
+    day_validity: string,
+    message: string,
+    name: string,
+    room_name: string,
+    section: string,
+    time_end: string,
+    time_start: string,
+    time_requested: TimeType,
+    uid: string
+}
+
+export interface RejectDBTypes {
+    day_validity:string,
+    message:string,
+    time_rejected: TimeType,
+    uid:string
+}
+
+export interface AcceptDBTypes {
+    day_validity:string,
+    message:string,
+    time_accepted:TimeType,
+    uid:string,
+    room:string,
+    time_start: string,
+    time_end: string,
+    name: string,
+    section:string
+}
+
+export type ActivityResponseType = "request" | "rejected" | "accepted"
+
+export interface ActivityType {
+    activity_name?: string,
+    room?: string,
+    time_start?: string,
+    time_end?: string,
+    time_requested: TimeType,
+    name?: string,
+    section?: string,
+    message: string,
+    type: ActivityResponseType
+}

@@ -70,9 +70,9 @@ export default function RootLayout() {
             }}
         >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="schedule_search" options={{ headerShown: false, }} />
-            <Stack.Screen name="room_request" options={{ headerShown: false, }} />
-
+            <Stack.Screen name="schedule_search" options={{ headerShown: false }} />
+            <Stack.Screen name="room_request" options={{ headerShown: false }} />
+            <Stack.Screen name="room_request_list" options={{headerShown:false}} />
         </Stack>
     )
 }
