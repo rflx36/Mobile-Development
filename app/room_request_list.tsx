@@ -1,6 +1,7 @@
 import { realtime_database } from "@/firebase/firebase_config";
+import { simulate_time } from "@/modify";
 import { AcceptDBTypes, ActivityType, RejectDBTypes, RequestDBTypes, TimeType } from "@/types/types";
-import { ConvertTimeToValue } from "@/utils";
+import { ConvertTimeToValue, RevertTime } from "@/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import { onValue, ref } from "firebase/database";
@@ -101,20 +102,34 @@ export default function RequestList() {
         // name
         // section
         // }
+
+        const hours = new Date().getHours();
+        const minutes = new Date().getMinutes();
+        const current_time_value = (simulate_time == null) ? ((hours * 60) + minutes) : ConvertTimeToValue(simulate_time);
         const Activity: Array<ActivityType> = [];
-        const request_list_modified: Array<ActivityType> = requestList.map(x =>
-        ({
-            activity_name: "Requested access for " + x.room_name,
-            room: x.room_name,
-            time_start: x.time_start,
-            time_end: x.time_end,
-            time_requested: x.time_requested,
-            name: x.name,
-            section: x.section,
-            message: x.message,
-            type: "request",
+        const request_list_modified: Array<ActivityType> = requestList.map(x => {
+
+            let obj: ActivityType = {
+                activity_name: "Requested access for " + x.room_name,
+                room: x.room_name,
+                time_start: x.time_start,
+                time_end: x.time_end,
+                time_requested: x.time_requested,
+                name: x.name,
+                section: x.section,
+                message: x.message,
+                type: "request",
+            }
+            if (current_time_value > ConvertTimeToValue(RevertTime(x.time_start))) {
+                obj.activity_name = "Request access for " + x.room_name + " Expired"
+                obj.time_start = "";
+                obj.time_end = "";
+            }
+            return obj;
+
+
         })
-        )
+
 
         const reject_list_modified: Array<ActivityType> = rejectedList.map(x =>
         ({
