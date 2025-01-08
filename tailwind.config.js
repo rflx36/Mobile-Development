@@ -28,7 +28,7 @@ module.exports = {
           900: "#1E1E1E",
           950: "#151515"
         },
-        "primary": "#E9AA96",
+        "primary": "#DA99B9",
         "secondary": "#C185A2",
         "accent": "#6962AD",
         "optional": {

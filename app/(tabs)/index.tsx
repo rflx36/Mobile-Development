@@ -73,7 +73,7 @@ export default function Home() {
 
 
     return (
-        <View className="bg-black/95 h-full w-full ">
+        <View className="bg-[#0D0D0D] h-full w-full ">
             <View className="mx-[24] w-auto">
 
                 <View className=" h-[60] justify-center  flex items-end">
@@ -186,7 +186,7 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
     let following_initiated = false;
     let current_initiated = false;
     const time_list_data_sorted = props.data.sort((a, b) => ConvertTimeToValue(a.time_start) - ConvertTimeToValue(b.time_start));
-    const schedule_height = Dimensions.get("screen").height - 290;
+    const schedule_height = Dimensions.get("screen").height - 295;
 
     // console.log(schedule_height);
     let past = 0;
@@ -198,8 +198,8 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
 
     const get_filter = state.get.linked_schedule?.selected;
     return (
-        <View>
-            <ScrollView ref={scroll_view_ref} style={{ height: schedule_height }} className="  border-y border-y-grey-900">
+        <View className="rounded-[20px] mx-2 overflow-hidden my-1">
+            <ScrollView ref={scroll_view_ref} style={{ height: schedule_height }} showsVerticalScrollIndicator={false} className=" bg-grey-900/75 ">
                 <View className="h-[10]" />
                 <View className="" style={{ height: schedule_height + (time_list_data_sorted.length * 71) }}>
 
@@ -246,7 +246,6 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
                                     type = "following";
                                 }
                             }
-                            const dat = props;
                             // console.log(state.get.linked_schedule?.selected);
 
                             if (!(current_initiated || following_initiated)) {
@@ -257,15 +256,35 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
                                 scroll_view_ref.current?.scrollTo({ y: ((past - 1) * 71), x: 0 });
                             }
 
-                            // const room_ = (x as RoomSessionSchedule);
-                            // const ins_ = (x as InstructorSessionSchedule);
-                            // const year_ = (x as YearSessionSchedule);
-                            
-                            // console.log(get_filter);
-                            // const info_1 = (room_.instructor) ? room_.instructor.first_name : (ins_.section) ? ins_.section : year_.room;
-                            // const info_2 = (x as YearSessionSchedule).room;
-                            const info_1 = "TEST DATA";
-                            const info_2 = "TEST DATA";
+                            const room_ = (x as RoomSessionSchedule);
+                            const ins_ = (x as InstructorSessionSchedule);
+                            const year_ = (x as YearSessionSchedule);
+
+
+
+                            const filter_type = state.get.linked_schedule!.type;
+                            let info_1 = "";
+                            let info_2 = "";
+
+                            if (filter_type == "instructor") {
+                                info_1 = ins_.room;
+                                info_2 = ins_.section;
+                            }
+                            else if (filter_type == "room") {
+                                info_1 = room_.instructor.first_name + " " + room_.instructor.last_name;
+                                info_2 = room_.section;
+                            }
+                            else if (filter_type == "section") {
+                                info_1 = year_.instructor.first_name + " " + year_.instructor.last_name;
+                                info_2 = year_.room;
+                            }
+
+
+
+
+                            if (time_elapsed == "") {
+                                time_elapsed = "0 min"
+                            }
                             return (
                                 <ScheduledTimeList
                                     session_start={ConvertTime(x.time_start)}
@@ -285,7 +304,14 @@ function ScheduledTimeListContainer(props: { data: Array<InstructorSessionSchedu
                             )
                         })
                     }
-
+                    {
+                        (time_list_data_sorted.length == 0) &&
+                        (
+                            <View className="w-full h-full justify-center items-center -translate-y-5">
+                                <Text className=" font-manrope-medium text-grey-600">No classes Scheduled :)</Text>
+                            </View>
+                        )
+                    }
                 </View>
             </ScrollView>
         </View>
@@ -299,26 +325,28 @@ function ScheduledTimeList(props: { is_current: boolean, session_start: string, 
 
 
     const GetStyle = () => {
-        const container_size = (props.is_current) ? "w-[250] h-[150]" : ((props.past) ? "w-[200] h-[80]" : "w-[200] h-[55]");
-        const container_color = (props.type == "active") ? "bg-secondary" : (props.type == "following") ? "bg-primary" : "bg-grey-900";
-        const container_radius = (props.is_current) ? "rounded-[24px]" : "rounded-[8px]";
+        const container_size = (props.is_current) ? "w-[250] h-[160]" : ((props.type == "following") ? "w-[210] h-[80]" : "w-[210] h-[65]");
+        const container_color = (props.type == "active") ? "bg-[#E9AA96]" : (props.type == "following") ? "bg-primary" : "bg-grey-750";
+        const container_radius = (props.is_current) ? "rounded-[24px] " : "rounded-[12px] ";
+
         return `${container_size} ${container_color} ${container_radius}`;
     }
     const container_style = GetStyle();
+
     return (
         <View className="flex-row mb-4">
-            <View className="w-[60] h-auto justify-between">
+            <View className="w-[50] h-auto justify-between">
                 <View className="flex-row items-end gap-[2] justify-end">
-                    <Text className={((props.is_current) ? "text-grey-500" : "text-grey-750") + " text-[14px] tabular-nums font-manrope-semibold"}>{session_start_time}</Text>
-                    <Text className={((props.is_current) ? "text-grey-500" : "text-grey-750") + " text-[8px] -translate-y-[2px] font-manrope-semibold"}>{session_start_period}</Text>
+                    <Text className={((props.is_current) ? "text-grey-300" : "text-grey-600") + " text-[10px] tabular-nums font-manrope-semibold"}>{session_start_time}</Text>
+                    <Text className={((props.is_current) ? "text-grey-300" : "text-grey-600") + " text-[8px] font-manrope-semibold"}>{session_start_period}</Text>
                 </View>
                 <View className="flex-1 w-full items-end">
 
                     <ImageBackground source={require("../../assets/images/dot.png")} resizeMode="repeat" className="flex-1 w-[4] mr-2 " />
                 </View>
                 <View className="flex-row items-end gap-[2] justify-end">
-                    <Text className={((props.is_current) ? "text-grey-500" : "text-grey-750") + " text-[14px] tabular-nums font-manrope-semibold"}>{session_end_time}</Text>
-                    <Text className={((props.is_current) ? "text-grey-500" : "text-grey-750") + " text-[8px] -translate-y-[2px] font-manrope-semibold"}>{session_end_period}</Text>
+                    <Text className={((props.is_current) ? "text-grey-300" : "text-grey-600") + " text-[10px] tabular-nums font-manrope-semibold"}>{session_end_time}</Text>
+                    <Text className={((props.is_current) ? "text-grey-300" : "text-grey-600") + " text-[8px] font-manrope-semibold"}>{session_end_period}</Text>
                 </View>
 
             </View>
@@ -328,28 +356,40 @@ function ScheduledTimeList(props: { is_current: boolean, session_start: string, 
                     {
                         (props.type == "active") ?
                             (
-                                <View className="h-full p-3 pt-2">
-                                    <View className="mx-1 ">
-                                        <Text className="text-grey-900 font-manrope-bold text-[22px]">{props.subject_code}</Text>
+                                <View className="h-full p-2">
+                                    {/* <View className="mx-1 ">
                                         <Text className="text-grey-900 font-manrope-medium text-[14px] -translate-y-1">{props.subject_title}</Text>
+                                    </View> */}
+                                    <View className="flex-row mx-1 justify-between items-center -translate-y-1">
+                                        <Text className="text-[#8d675c]  font-manrope-bold text-[22px]">{props.subject_code}</Text>
                                     </View>
-                                    <View className="mb-[8] mt-[2] flex-row">
-                                        <View>
-                                            <Text className="font-manrope-semibold text-grey-900 text-[12px]">Time Elapsed:</Text>
-                                            <Text className="font-manrope-semibold text-grey-900 text-[12px]">Time Remaining:</Text>
-                                        </View>
-                                        <View className="ml-4 tabular-nums">
-                                            <Text className="font-manrope-medium text-grey-900 text-[12px]">{props.time_elapsed}</Text>
-                                            <Text className="font-manrope-medium text-grey-900 text-[12px]">{props.time_remaining}</Text>
-                                        </View>
+                                    <View className=" h-[75] justify-center bg-[#966e60]/20 rounded-[12px]">
+                                        <Text className="px-2 font-manrope-semibold text-[#8d675c]">{props.subject_title}</Text>
+                                        <View className="w-full h-[1] bg-black/10 my-[2px]" />
 
+                                        <View className="items-center px-2 flex-row">
+                                            <View className="">
+                                                <Text className="font-manrope-semibold text-[#6d5048] text-[12px]">Time Elapsed:</Text>
+                                                <Text className="font-manrope-semibold text-[#6d5048] text-[12px]">Time Remaining:</Text>
+                                            </View>
+                                            <View className="ml-4 tabular-nums">
+                                                <Text className="font-manrope-medium text-[#6d5048] text-[12px]">{props.time_elapsed}</Text>
+                                                <Text className="font-manrope-medium text-[#6d5048] text-[12px]">{props.time_remaining}</Text>
+                                            </View>
+
+                                        </View>
                                     </View>
-                                    <View className="flex-row gap-3 ">
+
+                                    {/*s <View className="bg-grey-950/10 rounded-b-[16px] rounded-t-lg h-[46] justify-center  px-2">
+                                        <Text className="font-manrope-semibold text-[13px]">{props.info_1}</Text>
+                                        <Text className="font-manrope-semibold text-[13px]">{props.info_2}</Text>
+                                    </View> */}
+                                    <View className="flex-row gap-3 translate-y-1">
                                         <View className="px-2 py-1 bg-grey-300 rounded-full">
-                                            <Text className="font-manrope-semibold text-grey-900 text-[14px]">{props.info_1}</Text>
+                                            <Text className="font-manrope-semibold text-grey-900 text-[12px]">{props.info_1}</Text>
                                         </View>
                                         <View className="px-2 py-1 bg-grey-300 rounded-full">
-                                            <Text className="font-manrope-semibold text-grey-900 text-[14px]">{props.info_2}</Text>
+                                            <Text className="font-manrope-semibold text-grey-900 text-[12px]">{props.info_2}</Text>
                                         </View>
                                     </View>
                                 </View>
@@ -359,50 +399,56 @@ function ScheduledTimeList(props: { is_current: boolean, session_start: string, 
                                 (
                                     (props.is_current) ?
                                         (
-                                            <View className="flex justify-between h-full p-2 pb-3">
-                                                <View className="m-2">
-                                                    <View className="flex-row justify-between">
-                                                        <Text className="font-manrope-medium text-[14px]">Next Subject In:</Text>
-                                                        <Text className="font-manrope-medium text-[14px]">{props.time_following}</Text>
-                                                    </View>
-                                                    <View className="mt-2">
-                                                        <Text className="text-grey-900 font-manrope-bold text-[20px]">{props.subject_code}</Text>
-                                                        <Text className="text-grey-900 font-manrope-medium text-[12px]">{props.subject_title}</Text>
-                                                    </View>
+                                            <View className="flex  h-full p-2 pb-3">
 
+                                                <View className="flex-row justify-between mx-2">
+                                                    <Text className="font-manrope-medium text-[14px] text-[#553444]">Next Subject In:</Text>
+                                                    <Text className="font-manrope-medium text-[14px] text-[#89566E]">{props.time_following}</Text>
                                                 </View>
-                                                <View className="flex-row gap-3 ">
-                                                    <View className="px-2 py-1 bg-grey-300 rounded-full">
+                                                <View className="bg-black/10 rounded-t-[16px] rounded-b-lg mt-[6] h-[56] px-2">
+                                                    <View className="">
+                                                        <Text className="text-[#553444] font-manrope-bold text-[20px]">{props.subject_code}</Text>
+                                                        <Text className="text-[#553444] font-manrope-medium text-[12px]">{props.subject_title}</Text>
+                                                    </View>
+                                                </View>
+                                                <View className="bg-black/10 rounded-b-[16px] rounded-t-lg h-[56] justify-center mt-1 px-2">
+                                                    <Text className="font-manrope-semibold text-[#553444]">{props.info_1}</Text>
+                                                    <Text className="font-manrope-semibold text-[#553444]">{props.info_2}</Text>
+                                                </View>
+                                                {/* <View className="flex-row gap-3  ">
+                                                    <View className=" px-2 py-1 bg-grey-300 rounded-full">
                                                         <Text className="font-manrope-semibold text-grey-900 text-[14px]">{props.info_1}</Text>
                                                     </View>
                                                     <View className="px-2 py-1 bg-grey-300 rounded-full">
                                                         <Text className="font-manrope-semibold text-grey-900 text-[14px]">{props.info_2}</Text>
                                                     </View>
-                                                </View>
+                                                </View> */}
                                             </View>
                                         )
                                         :
                                         (
-                                            <View className="flex justify-between h-full p-2 pb-3">
-                                                <View className="flex-row justify-between">
-                                                    <Text className="font-manrope-medium text-[12px]">Next Subject In:</Text>
-                                                    <Text className="font-manrope-medium text-[12px]">{props.time_following}</Text>
-                                                </View>
-                                                <Text className="text-grey-900 font-manrope-bold text-[14px]">{props.subject_code}</Text>
-
-                                                <View className="flex-row gap-2">
-                                                    <Text className="text-grey-900 font-manrope-medium text-[10px]">{props.info_1}</Text>
-                                                    <Text className="text-grey-900 font-manrope-medium text-[10px]">{props.info_2}</Text>
+                                            <View className="flex justify-between h-full py-1">
+                                                <Text className="text-[#89566E] font-manrope-bold text-[14px] mx-2">{props.subject_code}</Text>
+                                                <View className="bg-[#00000019] mx-1 h-[47]  py-1 justify-between rounded-lg">
+                                                    <View className="flex-row justify-between px-2">
+                                                        <Text className="font-manrope-medium text-[10px] text-[#553444]">Next Subject In:</Text>
+                                                        <Text className="font-manrope-medium text-[10px] text-[#553444]">{props.time_following}</Text>
+                                                    </View>
+                                                    <View className="w-full h-[1] bg-black/10" />
+                                                    <View className="flex-row gap-2 px-2">
+                                                        <Text className="text-[#553444] font-manrope-medium text-[10px]">{props.info_1}</Text>
+                                                        <Text className="text-[#553444] font-manrope-medium text-[10px]">{props.info_2}</Text>
+                                                    </View>
                                                 </View>
                                             </View>
                                         ))
                                 :
                                 (
-                                    <View className="flex justify-between h-full p-2 pb-3">
-                                        <Text className="text-grey-600 font-manrope-bold text-[14px]">{props.subject_code}</Text>
-                                        <View className="flex-row gap-2">
-                                            <Text className="text-grey-600/75 font-manrope-medium text-[10px]">{props.info_1}</Text>
-                                            <Text className="text-grey-600/75 font-manrope-medium text-[10px]">{props.info_2}</Text>
+                                    <View className="flex justify-between h-full  py-1">
+                                        <Text className="text-grey-400 font-manrope-bold text-[14px] mx-2">{props.subject_code}</Text>
+                                        <View className="flex-row gap-2 bg-grey-950/25 h-[30] rounded-lg mx-1 items-start">
+                                            <Text className="text-grey-400/50 font-manrope-medium text-[10px]">{props.info_1}</Text>
+                                            <Text className="text-grey-400/50 font-manrope-medium text-[10px]">{props.info_2}</Text>
                                         </View>
                                     </View>
                                 ))

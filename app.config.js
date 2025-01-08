@@ -1,6 +1,6 @@
-{
+export default{
   "expo": {
-    "name": "Mobile-Development",
+    "name": "Smartsched",
     "slug": "Mobile-Development",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,10 +17,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/icons/icon-smartsched.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.rflx3608.MobileDevelopment",
+      "package": "com.smartsched.mobile",
       "googleServicesFile": "./google-services.json"
     },
     "web": {
@@ -51,13 +51,5 @@
     },
     "owner": "rflx3608"
   },
-  "extra": {
-    "eas": {
-      "projectId": "e9b74d5d-3cc1-443f-ad0c-4a9f0e003811"
-    }
-  },
-  "android": {
-    "package": "com.rflx3608.smartsched",
-    "versionCode": 1
-  }
+  
 }

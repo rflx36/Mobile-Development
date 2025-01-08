@@ -15,6 +15,10 @@ export function ConvertHourToValue(hours: number) {
 }
 
 export function RevertTime(time: string) {
+
+    if (time == ""){
+        return "00:00"
+    }
     // Remove "AM" or "PM" and split time into hours and minutes
     const [hour, minute] = time.slice(0, -3).split(":");
 

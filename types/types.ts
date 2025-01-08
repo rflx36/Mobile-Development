@@ -196,6 +196,7 @@ export interface ViewScheduleType {
 
 export interface LinkedScheduleType {
     selected: string,
+    type: ScheduleFilterType,
     data: DataFiltered
 }
 

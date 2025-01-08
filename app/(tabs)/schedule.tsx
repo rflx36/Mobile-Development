@@ -32,15 +32,16 @@ export default function Schedule() {
 
 
         const GetAccepted = async () => {
-            const uid = await AsyncStorage.getItem("unique_app_id") || "";
+            // const uid = await AsyncStorage.getItem("unique_app_id") || ""; ?????
             const ref_ = ref(realtime_database, "schedule/accepted");
             onValue(ref_, (snapshot) => {
                 if (snapshot.val()) {
                     let dat = Object.values(snapshot.val()) as Array<AcceptDBTypes>;
-                    dat = dat.filter(x => x.uid == uid);
-                    if (accepted != dat) {
-                        setAccepted(dat);
-                    }
+                    // dat = dat.filter(x => x.uid == uid);
+                    // if (accepted != dat) {
+                    //     setAccepted(dat);
+                    // }
+                    setAccepted(dat);
                 }
             })
 
@@ -212,11 +213,11 @@ function SheetContainer() {
                                         <View className="w-auto mx-2 my-[9px]">
                                             <Text className="text-grey-500 font-manrope-semibold text-[12px] ">{room_info.time_display}</Text>
                                             {
-                                                ((!room_info.is_available && room_info.time_display != "") &&
+                                                ((!room_info.is_available && room_info.time_display != "" && room_info.time_display != "School Closed") &&
                                                     (
                                                         <>
                                                             <Text className="text-grey-500">section: {current?.section}</Text>
-                                                            <Text className="text-grey-500">{(current?.instructor.slice(0, 9) != "requested") ? "instructor: " + current?.instructor : "Name: " + current.instructor.slice(9)+" (Requested)"}</Text>
+                                                            <Text className="text-grey-500">{(current?.instructor.slice(0, 9) != "requested") ? "instructor: " + current?.instructor : "Name: " + current.instructor.slice(9) + " (Requested)"}</Text>
                                                             <Text className="text-grey-500">{(current?.subject != "requested") ? "subject:" + current?.subject : ""}</Text>
 
                                                         </>
@@ -301,32 +302,32 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, a
 
         const GetDayInfo = (room_data: Array<RoomSessionSchedule>, room_name: string) => {
             let room_dat = room_data;
-            const accepteds = props.accepted.find(x => room_name == x.room);
+            const accepteds = props.accepted.filter(x => room_name == x.room);
 
-
-            if (accepteds) {
-                // const dat = { start: RevertTime(accepteds.time_start), end: RevertTime(accepteds.time_end) }
-                room_dat.push({
-                    time_start: RevertTime(accepteds.time_start),
-                    time_end: RevertTime(accepteds.time_end),
-                    duration: 0,
-                    section: accepteds.section,
-                    year: 1 as YearType,
-                    course: {
-                        code: "",
-                        title: "",
-                    },
-                    instructor: {
-                        first_name: "requested" + accepteds.name,
-                        last_name: ""
-                    },
-                    subject: {
-                        code: "requested",
-                        title: ""
-                    }
-                })
-
+            if (accepteds.length > 0) {
+                for (let i = 0; i < accepteds.length; i++) {
+                    room_data.push({
+                        time_start: RevertTime(accepteds[i].time_start),
+                        time_end: RevertTime(accepteds[i].time_end),
+                        duration: 0,
+                        section: accepteds[i].section,
+                        year: 1 as YearType,
+                        course: {
+                            code: "",
+                            title: "",
+                        },
+                        instructor: {
+                            first_name: "requested" + accepteds[i].name,
+                            last_name: "",
+                        },
+                        subject: {
+                            code: "requested",
+                            title: "",
+                        }
+                    });
+                }
             }
+
 
             const times = room_dat.map(x => ({ start: x.time_start, end: x.time_end }));
 
@@ -363,7 +364,7 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, a
             let available = true;
             let text = "";
             let allocation: Array<AllocatedListType> = [];
-            let time_display = "";
+            let time_display = "Room is available until end of the day";
             if (day == "Monday" && x.monday_schedule) {
                 const day_info = GetDayInfo(x.monday_schedule as Array<RoomSessionSchedule>, x.filter);
                 available = day_info.available;
@@ -408,6 +409,7 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, a
             }
             else if (day == "Sunday") {
                 available = false;
+                time_display = "School Closed"
 
             }
 
@@ -416,7 +418,7 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, a
 
             const match_name = state.get.main_schedule?.rooms.find(y => x.filter == y.room_name && y.is_realtime);
             if (match_name) {
-                if (props.realtimes != null) {
+                if (props.realtimes != null && day != "Sunday") {
                     if (match_name.realtime_id && props.realtimes.hasOwnProperty(match_name.realtime_id)) {
                         const value = props.realtimes[match_name.realtime_id];
                         available = !value.occupied;
@@ -441,7 +443,7 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, a
         let floors: Array<FloorType> = [];
         const saved_floors =
             [
-                "r1", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
+                "107", "r2", "r3", "r4", "r5", "r6", "r7", "r8",
                 "r9", "r10", "r11", "r12", "r13", "r14", "PRRC202", "r15",
                 "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23"
             ]
@@ -493,17 +495,46 @@ function SetInteractiveFloorsContainer(props: { floor: number, realtimes: any, a
                         {(floors[0]) ? <InteractiveRoom time_display={floors[0].time_display} allocation_list={floors[0].allocation} is_available={floors[0].is_available} room_name={floors[0].name} text={floors[0].text} /> : <UnAllocatedRoom />}
                         {(floors[1]) ? <InteractiveRoom time_display={floors[1].time_display} allocation_list={floors[1].allocation} is_available={floors[1].is_available} room_name={floors[1].name} text={floors[1].text} /> : <UnAllocatedRoom />}
                         <View className="h-[72]" />
-
-                        {(floors[2]) ? <InteractiveRoom time_display={floors[2].time_display} allocation_list={floors[2].allocation} is_available={floors[2].is_available} room_name={floors[2].name} text={floors[2].text} /> : <UnAllocatedRoom />}
-                        {(floors[3]) ? <InteractiveRoom time_display={floors[3].time_display} allocation_list={floors[3].allocation} is_available={floors[3].is_available} room_name={floors[3].name} text={floors[3].text} /> : <UnAllocatedRoom />}
+                        {
+                            (props.floor != 3) ?
+                                (
+                                    <>
+                                        {(floors[2]) ? <InteractiveRoom time_display={floors[2].time_display} allocation_list={floors[2].allocation} is_available={floors[2].is_available} room_name={floors[2].name} text={floors[2].text} /> : <UnAllocatedRoom />}
+                                        {(floors[3]) ? <InteractiveRoom time_display={floors[3].time_display} allocation_list={floors[3].allocation} is_available={floors[3].is_available} room_name={floors[3].name} text={floors[3].text} /> : <UnAllocatedRoom />}
+                                    </>
+                                )
+                                :
+                                (
+                                    <>
+                                        <View className="h-[110] " />
+                                        {(floors[2]) ? <CustomInteractiveRoom height="h-[110]" time_display={floors[2].time_display} allocation_list={floors[2].allocation} is_available={floors[2].is_available} room_name={floors[2].name} text={floors[2].text} /> : <CustomUnAllocatedRoom height="h-[110]" />}
+                                    </>
+                                )
+                        }
                     </View>
                     <View>
-                        {(floors[4]) ? <InteractiveRoom time_display={floors[4].time_display} allocation_list={floors[4].allocation} is_available={floors[4].is_available} room_name={floors[4].name} text={floors[4].text} /> : <UnAllocatedRoom />}
-                        {(floors[5]) ? <InteractiveRoom time_display={floors[5].time_display} allocation_list={floors[5].allocation} is_available={floors[5].is_available} room_name={floors[5].name} text={floors[5].text} /> : <UnAllocatedRoom />}
-                        <View className="h-[72]" />
+                        {
+                            (props.floor != 3) ?
+                                (
+                                    <>
+                                        {(floors[4]) ? <InteractiveRoom time_display={floors[4].time_display} allocation_list={floors[4].allocation} is_available={floors[4].is_available} room_name={floors[4].name} text={floors[4].text} /> : <UnAllocatedRoom />}
+                                        {(floors[5]) ? <InteractiveRoom time_display={floors[5].time_display} allocation_list={floors[5].allocation} is_available={floors[5].is_available} room_name={floors[5].name} text={floors[5].text} /> : <UnAllocatedRoom />}
+                                        <View className="h-[72] " />
+                                        {(floors[6]) ? <InteractiveRoom time_display={floors[6].time_display} allocation_list={floors[6].allocation} is_available={floors[6].is_available} room_name={floors[6].name} text={floors[6].text} /> : <UnAllocatedRoom />}
+                                        {(floors[7]) ? <InteractiveRoom time_display={floors[7].time_display} allocation_list={floors[7].allocation} is_available={floors[7].is_available} room_name={floors[7].name} text={floors[7].text} /> : <UnAllocatedRoom />}
 
-                        {(floors[6]) ? <InteractiveRoom time_display={floors[6].time_display} allocation_list={floors[6].allocation} is_available={floors[6].is_available} room_name={floors[6].name} text={floors[6].text} /> : <UnAllocatedRoom />}
-                        {(floors[7]) ? <InteractiveRoom time_display={floors[7].time_display} allocation_list={floors[7].allocation} is_available={floors[7].is_available} room_name={floors[7].name} text={floors[7].text} /> : <UnAllocatedRoom />}
+                                    </>
+                                ) :
+                                (
+                                    <>
+                                        {(floors[3]) ? <InteractiveRoom time_display={floors[3].time_display} allocation_list={floors[3].allocation} is_available={floors[3].is_available} room_name={floors[3].name} text={floors[3].text} /> : <UnAllocatedRoom />}
+                                        {(floors[4]) ? <InteractiveRoom time_display={floors[4].time_display} allocation_list={floors[4].allocation} is_available={floors[4].is_available} room_name={floors[4].name} text={floors[4].text} /> : <UnAllocatedRoom />}
+                                        <View className="h-[72] " />
+                                        {(floors[5]) ? <InteractiveRoom time_display={floors[5].time_display} allocation_list={floors[5].allocation} is_available={floors[5].is_available} room_name={floors[5].name} text={floors[5].text} /> : <UnAllocatedRoom />}
+                                        {(floors[6]) ? <InteractiveRoom time_display={floors[6].time_display} allocation_list={floors[6].allocation} is_available={floors[6].is_available} room_name={floors[6].name} text={floors[6].text} /> : <UnAllocatedRoom />}
+                                    </>
+                                )
+                        }
                     </View>
                 </View>
 
@@ -546,6 +577,48 @@ function InteractiveRoom(props: { is_available: boolean, room_name: string, text
     return (
         <Pressable onPress={ViewInfo}>
             <View className="w-[110] mx-[2] h-[110]  justify-center items-center">
+                <Text className={((props.is_available) ? "text-grey-150" : "text-grey-150/50") + " font-manrope-semibold text-[16px]"}>{props.room_name.toUpperCase()}</Text>
+                <Text className={((props.is_available) ? "text-[#96E99E]" : "text-[#F57272]") + " font-manrope-semibold text-[12px]"}>{(props.is_available) ? "Available" : "Unavailable"}</Text>
+                <Text className="text-[#F57272] font-manrope-semibold text-[8px] opacity-50">{props.text}</Text>
+            </View>
+
+        </Pressable >
+    )
+}
+
+
+function CustomUnAllocatedRoom(props: { height: string }) {
+    return (
+        <View className={"w-[110] mx-[2]   " + props.height} />
+
+    )
+}
+
+
+function CustomInteractiveRoom(props: { height: string, is_available: boolean, room_name: string, text: string, allocation_list: Array<AllocatedListType>, time_display: string }) {
+    const state = useGlobalStore();
+
+
+
+    const ViewInfo = () => {
+
+        const view_room: ViewRoomType = {
+            room_name: props.room_name,
+            is_available: props.is_available,
+            allocated_list: props.allocation_list,
+            time_display: props.time_display
+        }
+
+        state.get.view_room = (state.get.view_room?.room_name == view_room.room_name) ? null : view_room;
+        state.set();
+    }
+
+
+
+
+    return (
+        <Pressable onPress={ViewInfo}>
+            <View className={"w-[110] mx-[2]  justify-center items-center " + props.height}>
                 <Text className={((props.is_available) ? "text-grey-150" : "text-grey-150/50") + " font-manrope-semibold text-[16px]"}>{props.room_name.toUpperCase()}</Text>
                 <Text className={((props.is_available) ? "text-[#96E99E]" : "text-[#F57272]") + " font-manrope-semibold text-[12px]"}>{(props.is_available) ? "Available" : "Unavailable"}</Text>
                 <Text className="text-[#F57272] font-manrope-semibold text-[8px] opacity-50">{props.text}</Text>

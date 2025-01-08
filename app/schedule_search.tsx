@@ -59,7 +59,8 @@ export default function ViewSchedule() {
         }
         const linked_schedule = {
             selected: state.get.view_schedule.selected,
-            data: state.get.view_schedule.data
+            data: state.get.view_schedule.data,
+            type: state.get.view_schedule.filter_type
         }
         storeData(JSON.stringify(linked_schedule));
         state.get.linked_schedule = linked_schedule;

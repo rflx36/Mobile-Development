@@ -4,7 +4,7 @@ import { AcceptDBTypes, ActivityType, RejectDBTypes, RequestDBTypes, TimeType } 
 import { ConvertTimeToValue, RevertTime } from "@/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import { onValue, ref } from "firebase/database";
+import { onValue, ref, remove } from "firebase/database";
 import { useEffect, useState } from "react";
 import { Image, NativeModules, Platform, Pressable, ScrollView, StatusBar, Text, View } from "react-native";
 
@@ -32,6 +32,22 @@ export default function RequestList() {
         router.back();
     }
 
+
+    const getTodayDate = () => {
+        const today = new Date();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const year = String(today.getFullYear()).slice(-2);
+        return `${month}-${day}-${year}`;
+    };
+
+    const removeInvalidRequest = async (id: Array<string>, type: string) => {
+        for (let i = 0; i < id.length; i++) {
+            const invalidRef = ref(realtime_database, `schedule/${type}/${id[i]}`);
+            await remove(invalidRef);
+        }
+    }
+
     useEffect(() => {
         const RequestInit = async () => {
 
@@ -39,10 +55,20 @@ export default function RequestList() {
             const ref_ = ref(realtime_database, "schedule/request");
             onValue(ref_, (snapshot) => {
                 if (snapshot.val()) {
-                    let dat = Object.values(snapshot.val()) as Array<RequestDBTypes>;
-                    dat = dat.filter(x => x.uid == uid);
-                    if (requestList != dat) {
-                        setRequestList(dat);
+                    let request = Object.entries(snapshot.val()).map(([id, value]) => ({
+                        ...(value as Omit<RequestDBTypes, "id">),
+                        id,
+                    }));
+                    request = request.filter(x => x.uid == uid);
+                    const filtered_request = request.filter(x => x.day_validity == getTodayDate());
+                    const invalid_request = request.filter(x => x.day_validity != getTodayDate());
+
+                    if (requestList != filtered_request) {
+                        setRequestList(filtered_request);
+                    }
+
+                    if (invalid_request.length > 0) {
+                        removeInvalidRequest(invalid_request.map(x => x.id), "request");
                     }
                 }
             })
@@ -56,18 +82,24 @@ export default function RequestList() {
             const ref_ = ref(realtime_database, "schedule/response");
             onValue(ref_, (snapshot) => {
                 if (snapshot.val()) {
-                    let dat = Object.values(snapshot.val()) as Array<RejectDBTypes>;
-                    dat = dat.filter(x => x.uid == uid);
-                    if (rejectedList != dat) {
-                        setRejectedList(dat);
+                    let request = Object.entries(snapshot.val()).map(([id, value]) => ({
+                        ...(value as Omit<RejectDBTypes, "id">),
+                        id,
+                    }));
+                    request = request.filter(x => x.uid == uid);
+                    const filtered_request = request.filter(x => x.day_validity == getTodayDate());
+                    const invalid_request = request.filter(x => x.day_validity != getTodayDate());
+                    if (rejectedList != filtered_request) {
+                        setRejectedList(filtered_request);
+                    }
+                    if (invalid_request.length > 0) {
+                        removeInvalidRequest(invalid_request.map(x => x.id), "response");
                     }
                 }
             })
-
         }
         RejectInit();
     }, [])
-
     useEffect(() => {
         const AcceptInit = async () => {
             const uid = await AsyncStorage.getItem("unique_app_id") || "";
@@ -75,10 +107,19 @@ export default function RequestList() {
             onValue(ref_, (snapshot) => {
                 if (snapshot.val()) {
 
-                    let dat = Object.values(snapshot.val()) as Array<AcceptDBTypes>;
-                    dat = dat.filter(x => x.uid == uid);
-                    if (acceptedList != dat) {
-                        setAcceptedList(dat);
+                 
+                    let request = Object.entries(snapshot.val()).map(([id, value]) => ({
+                        ...(value as Omit<AcceptDBTypes, "id">),
+                        id,
+                    }));
+                    request = request.filter(x => x.uid == uid);
+                    const filtered_request = request.filter(x => x.day_validity == getTodayDate());
+                    const invalid_request = request.filter(x => x.day_validity != getTodayDate());
+                    if (acceptedList != filtered_request) {
+                        setAcceptedList(filtered_request);
+                    }
+                    if (invalid_request.length > 0) {
+                        removeInvalidRequest(invalid_request.map(x => x.id), "accepted");
                     }
                 }
             })
